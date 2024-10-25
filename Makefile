@@ -42,8 +42,13 @@ empty-bucket:
 	aws s3 rm s3://$(BUCKET_NAME) --recursive --profile $(AWS_PROFILE)
 	@echo "S3 bucket emptied"
 
+empty-logs-bucket:
+	@echo "Emptying S3 logs bucket"
+	aws s3 rm s3://$(BUCKET_NAME)-logs --recursive --profile $(AWS_PROFILE)
+	@echo "S3 logs bucket emptied"
+
 deploy: create-stack wait-stack upload-files
 	@echo "Deployment completed"
 
-clean: empty-bucket delete-stack
+clean: empty-bucket empty-logs-bucket delete-stack
 	@echo "Cleaned up"
