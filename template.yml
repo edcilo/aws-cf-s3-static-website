@@ -1,0 +1,68 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  This template creates an S3 bucket for static website hosting with
+  public access enabled.
+
+Metadata:
+  Version: 1.0.0
+  LastUpdated: 2024-10-25
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Bucket Configuration
+        Parameters:
+          - BucketName
+    ParameterLabels:
+      BucketName:
+        default: Bucket Name
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: The name of the S3 bucket to create
+    MinLength: 3
+    MaxLength: 63
+    AllowedPattern: ^[a-z0-9.-]+$
+    ConstraintDescription: Must be a valid S3 bucket name.
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Ref: BucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        IgnorePublicAcls: false
+        BlockPublicPolicy: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+      # Cors? CorsConfiguration
+      # Logging? LoggingConfiguration
+      # Metrics? MetricsConfiguration
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: S3Bucket
+      PolicyDocument:
+        Id: StaticWebsitePolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: S3GetObjectAllow
+            Effect: Allow
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource:
+              Fn::Sub: "arn:aws:s3:::${S3Bucket}/*"
+
+Outputs:
+  WebsiteURL:
+    Value:
+      Fn::GetAtt:
+        - S3Bucket
+        - WebsiteURL
+    Description: URL for website hosted on S3
